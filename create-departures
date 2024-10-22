@@ -1,0 +1,25 @@
+WITH 
+    [
+        'Toyota Camry', 'Honda Civic', 'Ford F-150', 'Chevrolet Silverado', 
+        'Ram 1500', 'Toyota RAV4', 'Honda CR-V', 'Nissan Rogue', 
+        'Ford Escape', 'Jeep Grand Cherokee'
+    ] AS models,
+    datetime('2024-10-21T00:00:00') AS startDate,
+    datetime('2024-10-21T23:59:59') AS endDate
+
+MATCH (c:City)
+WITH 
+    apoc.coll.randomItem(models) AS model,
+    startDate + duration({seconds: toInteger(rand() * duration.between(startDate, endDate).seconds)}) AS randomDate,
+    c
+ORDER BY c.population DESC
+WITH model, randomDate, c
+LIMIT 16000
+WITH model, randomDate, c as city
+CREATE (d:Departure {
+    city: city.city,
+    lat: city.lat,
+    lng: city.lng,
+    createdAt: randomDate,
+    model: model
+})
